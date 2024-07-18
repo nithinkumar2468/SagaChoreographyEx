@@ -16,7 +16,6 @@ cloud:
   aws:
     credentials:
       useDefaultAwsCredentialsChain: 'true'
-
       instanceProfile: 'false'
     region:
       static: ap-south-1

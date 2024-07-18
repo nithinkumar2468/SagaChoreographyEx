@@ -1,7 +1,6 @@
 cloud:
   aws:
     credentials:
-
       instanceProfile: 'false'
       useDefaultAwsCredentialsChain: 'true'
     region:
