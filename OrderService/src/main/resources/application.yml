@@ -1,0 +1,25 @@
+cloud:
+  aws:
+    credentials:
+      accessKey: AKIAW3MEBN7475IXMRCW
+      secretKey: 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
+      instanceProfile: 'false'
+      useDefaultAwsCredentialsChain: 'true'
+    region:
+      static: ap-south-1
+    end-point:
+      urihttps: //sqs.ap-south-1.amazonaws.com/471112708089/payment-updates
+    stack:
+      auto: 'false'
+spring:
+  datasource:
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/order
+    password: root
+  jpa:
+    hibernate:
+      show-sql: 'true'
+      ddl-auto: update
+  main:
+    scan:
+      base-packages: org.saga.example.order

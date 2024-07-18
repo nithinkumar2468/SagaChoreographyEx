@@ -1,0 +1,27 @@
+spring:
+  main:
+    allow-bean-definition-overriding: 'true'
+    scan:
+      base-packages: org.saga.example.delivery
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: 'true'
+  datasource:
+    password: root
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/delivery
+cloud:
+  aws:
+    credentials:
+      useDefaultAwsCredentialsChain: 'true'
+      accessKey: AKIAW3MEBN7475IXMRCW
+      secretKey: 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
+      instanceProfile: 'false'
+    region:
+      static: ap-south-1
+    stack:
+      auto: 'false'
+server:
+  port: '8083'
+
