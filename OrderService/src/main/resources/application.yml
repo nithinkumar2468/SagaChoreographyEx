@@ -1,6 +1,8 @@
 cloud:
   aws:
     credentials:
+      accessKey: AKIAW3MEBN7475IXMRCW
+      secretKey: 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
       instanceProfile: 'false'
       useDefaultAwsCredentialsChain: 'true'
     region:
@@ -19,5 +21,6 @@ spring:
       show-sql: 'true'
       ddl-auto: update
   main:
+    allow-bean-definition-overriding: 'true'
     scan:
       base-packages: org.saga.example.order

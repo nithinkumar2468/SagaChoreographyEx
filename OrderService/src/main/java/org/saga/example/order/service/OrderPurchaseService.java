@@ -1,6 +1,9 @@
 package org.saga.example.order.service;
 
+import org.saga.example.order.exceptions.HotelInactiveException;
+import org.saga.example.order.model.Hotel;
 import org.saga.example.order.model.OrderPurchase;
+import org.saga.example.order.repository.HotelRepository;
 import org.saga.example.order.repository.OrderPurchaseRepository;
 import org.saga.example.shared.DTO.OrderPurchaseDTO;
 import org.saga.example.shared.order.OrderQueue;
@@ -9,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -25,9 +29,12 @@ public class OrderPurchaseService {
     private OrderPurchaseRepository repo;
 
     @Autowired
+    private HotelRepository hrrepo;
+
+    @Autowired
     private OrderPublisher publisher;
 
-    @Transactional
+    @Transactional(rollbackFor = {HotelInactiveException.class}, propagation = Propagation.REQUIRED)
     public OrderPurchase createOrderPurchase(OrderPurchaseDTO purchase) {
         OrderPurchase orderpurchase = new OrderPurchase();
         orderpurchase.setOrderId(purchase.getOrderId());
@@ -41,11 +48,17 @@ public class OrderPurchaseService {
         String time = new Timestamp(System.currentTimeMillis()).toString();
         orderpurchase.setCreatedTimeStamp(time);
 
+        repo.save(orderpurchase);
+
+        log.info("Order Created for orderId : " + purchase.getOrderId());
+
         publisher.publish(orderpurchase);
 
-        log.info("Order Created for orderId : "+purchase.getOrderId());
-
-        return repo.save(orderpurchase);
+        Hotel status = hrrepo.findById(purchase.getHotelId()).get();
+        if (status.getStatus().equalsIgnoreCase("inactive")) {
+            throw new RuntimeException("Hotel InActive For orderId : " + purchase.getOrderId());
+        }
+        return orderpurchase;
     }
 
     public List<OrderPurchase> getAllOrders() {
@@ -71,7 +84,7 @@ public class OrderPurchaseService {
         return response;
     }
 
-    public void deleteByorderId(UUID orderId){
+    public void deleteByorderId(UUID orderId) {
         repo.deleteById(orderId);
     }
 }

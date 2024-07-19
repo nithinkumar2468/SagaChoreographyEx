@@ -36,7 +36,6 @@ public class DeliveryService {
 
         repo.save(delivery);
 
-        Thread.sleep(1000);
         OrderQueue response=OrderQueue.of(request.getOrderId(),OrderState.ORDER_DELIVERED,"success");
         publisher.publish(response);
     }
