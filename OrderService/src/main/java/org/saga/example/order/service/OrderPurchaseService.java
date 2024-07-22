@@ -2,6 +2,7 @@ package org.saga.example.order.service;
 
 import io.reactivex.rxjava3.core.Observable;
 import org.saga.example.order.exceptions.HotelInactiveException;
+import org.saga.example.order.exceptions.OrderNotFoundException;
 import org.saga.example.order.model.Hotel;
 import org.saga.example.order.model.OrderPurchase;
 import org.saga.example.order.repository.HotelRepository;
@@ -67,7 +68,9 @@ public class OrderPurchaseService {
     }
 
     public OrderPurchase getByID(@PathVariable UUID orderId) {
-        return repo.findById(orderId).get();
+        return repo.findById(orderId).orElseThrow(
+                ()->new OrderNotFoundException("Order with id : "+orderId+" not found.")
+        );
     }
 
     public OrderQueue updateById(OrderQueue response) {

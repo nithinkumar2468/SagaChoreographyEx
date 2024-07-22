@@ -13,4 +13,9 @@ public class GlobalExceptionHandler {
     public @ResponseBody ErrorResponse handleException(HotelInactiveException ex){
         return new ErrorResponse(HttpStatus.NOT_ACCEPTABLE.value(), ex.getMessage());
     }
+
+    @ExceptionHandler(value= OrderNotFoundException.class)
+    public @ResponseBody ErrorResponse orderNotFoundHandler(OrderNotFoundException ex){
+        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
 }
