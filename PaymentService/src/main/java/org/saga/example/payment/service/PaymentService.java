@@ -9,6 +9,7 @@ import org.saga.example.orders.restaurant.PaymentResponseFromRestaurant;
 import org.saga.example.payment.entity.Payment;
 import org.saga.example.payment.entity.UserBalance;
 import org.saga.example.payment.entity.UserTxn;
+import org.saga.example.payment.exceptions.UserNotFoundException;
 import org.saga.example.payment.repository.PaymentRepository;
 import org.saga.example.payment.repository.UserBalanceRepository;
 import org.saga.example.payment.repository.UserTxnRepository;
@@ -55,7 +56,10 @@ public class PaymentService {
 
         //log.info(ubrepo.findAll().toString());
         //log.info(ubrepo.findById(orderPurchase.getCustomerId()).get().toString());
-        UserBalance ub = ubrepo.findById(orderPurchase.getCustomerId()).get();
+        UserBalance ub = ubrepo.findById(orderPurchase.getCustomerId()).orElseThrow(
+                ()->
+                    new UserNotFoundException("User with id : "+orderPurchase.getCustomerId()+" is not found.")
+        );
 
         if (ub.getBalance() >= orderPurchase.getPrice()) {
             ubrepo.findById(orderPurchase.getCustomerId())
