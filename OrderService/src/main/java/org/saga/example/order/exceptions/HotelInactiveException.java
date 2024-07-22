@@ -8,5 +8,4 @@ public class HotelInactiveException extends RuntimeException{
     public HotelInactiveException(String message) {
         super(message);
     }
-
 }

@@ -26,7 +26,7 @@ public class OrderEventPublisher {
     public void publish(OrderQueue request) {
         log.info("Publishing Event to Order_Updates Queue for orderId : "+request.getOrderId());
 
-        Observable.timer(100, TimeUnit.MILLISECONDS)
+        Observable.timer(200, TimeUnit.MILLISECONDS)
                         .subscribe(res->{
                             msgTemplate.convertAndSend("order-updates",request);
                         });

@@ -1,5 +1,6 @@
 package org.saga.example.order.service;
 
+import io.reactivex.rxjava3.core.Observable;
 import org.saga.example.order.exceptions.HotelInactiveException;
 import org.saga.example.order.model.Hotel;
 import org.saga.example.order.model.OrderPurchase;
@@ -34,7 +35,7 @@ public class OrderPurchaseService {
     @Autowired
     private OrderPublisher publisher;
 
-    @Transactional(rollbackFor = {HotelInactiveException.class}, propagation = Propagation.REQUIRED)
+    @Transactional(rollbackFor = {HotelInactiveException.class}, propagation = Propagation.REQUIRES_NEW)
     public OrderPurchase createOrderPurchase(OrderPurchaseDTO purchase) {
         OrderPurchase orderpurchase = new OrderPurchase();
         orderpurchase.setOrderId(purchase.getOrderId());
@@ -56,7 +57,7 @@ public class OrderPurchaseService {
 
         Hotel status = hrrepo.findById(purchase.getHotelId()).get();
         if (status.getStatus().equalsIgnoreCase("inactive")) {
-            throw new RuntimeException("Hotel InActive For orderId : " + purchase.getOrderId());
+            throw new HotelInactiveException("Hotel InActive For orderId : " + purchase.getOrderId());
         }
         return orderpurchase;
     }

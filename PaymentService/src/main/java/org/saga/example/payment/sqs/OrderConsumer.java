@@ -30,14 +30,14 @@ public class OrderConsumer {
 
     @SqsListener("payment-updates")
     public void consumeOrderPurchase(OrderPurchase orderPurchase) {
-        log.info("Received Order Status = " + orderPurchase.getOrderStatus() + " for OrderId : " + orderPurchase.getOrderId());
+        log.info("Received Order Status : " + orderPurchase.getOrderStatus() + " from Order-Service for OrderId : " + orderPurchase.getOrderId());
         service.send(orderPurchase);
     }
 
     @SqsListener("restaurant-failure-updates")
     public void consumePaymentResponse(PaymentResponseFromRestaurant response) {
         if (response != null) {
-            log.info("Received Order Status : " + response.getOrderState() + " from Restaurant for orderId : " + response.getOrderId());
+            log.info("Received Order Status : " + response.getOrderState() + " from Restaurant-Service for orderId : " + response.getOrderId());
             if (response.getMessage().equalsIgnoreCase("inactive")) {
                 Payment payment=repo.findById(response.getPaymentId()).get();
 
