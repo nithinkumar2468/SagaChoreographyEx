@@ -41,7 +41,7 @@
             <version>2.4.0</version>
         </dependency>
         <dependency>
-            <groupId>org.saga.example</groupId>
+            <groupId>org.saga.example.order</groupId>
             <artifactId>OrderService</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

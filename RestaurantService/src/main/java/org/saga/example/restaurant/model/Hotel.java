@@ -17,5 +17,6 @@ public class Hotel {
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator="hotel_id_seq")
     private Integer hotelId;
     private String hotelName;
+    private String password;
     private String status;
 }

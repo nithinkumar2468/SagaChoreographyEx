@@ -1,7 +1,7 @@
 package org.saga.example.restaurant.sqs;
 
 import io.awspring.cloud.messaging.listener.annotation.SqsListener;
-import org.saga.payment.entity.Payment;
+import org.saga.example.payment.entity.Payment;
 import org.saga.example.restaurant.service.RestaurantService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

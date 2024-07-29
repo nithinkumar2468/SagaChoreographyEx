@@ -1,14 +1,12 @@
 package org.saga.example.order;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.saga.example.order.exceptions.HotelInactiveException;
-import org.saga.example.order.model.Hotel;
 import org.saga.example.order.model.OrderPurchase;
-import org.saga.example.order.repository.HotelRepository;
 import org.saga.example.order.repository.OrderPurchaseRepository;
 import org.saga.example.order.service.OrderPublisher;
 import org.saga.example.order.service.OrderPurchaseService;
@@ -21,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,9 +39,6 @@ public class OrderServiceTests {
     @InjectMocks
     private OrderPurchaseService service;
 
-    @Mock
-    private HotelRepository hrRepo;
-
     @MockBean
     private OrderPurchaseRepository repo;
 
@@ -52,25 +48,18 @@ public class OrderServiceTests {
     }
 
     @Test
-    public void saveOrders() {
+    public void saveOrders() throws JsonProcessingException {
         UUID id=UUID.randomUUID();
-        when(repo.findAll()).thenReturn(Stream.of(new OrderPurchase(id, 22, 201, 1004, 2, 240, String.valueOf(OrderState.ORDER_PAID), "WALLET", new Timestamp(System.currentTimeMillis()).toString()), new OrderPurchase(UUID.randomUUID(), 24, 202, 1002, 4, 400, String.valueOf(OrderState.ORDER_PAID), "WALLET", new Timestamp(System.currentTimeMillis()).toString())).collect(Collectors.toList()));
-
-        Hotel hotel=new Hotel();
-        hotel.setHotelId(1004);
-        hotel.setHotelName("Meghna Foods");
-        hotel.setStatus("inactive");
-
-        when(hrRepo.findById(1004)).thenReturn(Optional.of(hotel));
+        when(repo.findAll()).thenReturn(Stream.of(new OrderPurchase(id, 22, 201, 1004, 2, 240, String.valueOf(OrderState.ORDER_PAID), "WALLET",new Timestamp(System.currentTimeMillis()).toString()), new OrderPurchase(UUID.randomUUID(), 24, 202, 1002, 4, 400, String.valueOf(OrderState.ORDER_PAID), "WALLET", new Timestamp(System.currentTimeMillis()).toString())).collect(Collectors.toList()));
 
         OrderPurchaseDTO dto=OrderPurchaseDTO.of(id,22,240,202,1004,240, "WALLET");
-        //service.createOrderPurchase(dto);
+        service.createOrderPurchase(dto);
 
-        doThrow(new HotelInactiveException("Hotel InActive For orderId : "+id)).when(repo).deleteById(id);
-        assertThatThrownBy(() -> service.createOrderPurchase(dto))
-                .isInstanceOf(RuntimeException.class);
-        //assertEquals(2, service.getAllOrders().size());
-        //verify(publisher, times(1)).publish(any());
+        //doThrow(new HotelInactiveException("Hotel InActive For orderId : "+id)).when(repo).deleteById(id);
+        //assertThatThrownBy(() -> service.createOrderPurchase(dto))
+        //        .isInstanceOf(RuntimeException.class);
+        assertEquals(2, service.getAllOrders().size());
+        verify(publisher, times(1)).publish(any());
     }
 
     @Test
@@ -100,9 +89,9 @@ public class OrderServiceTests {
     public void UpdateById() {
 
         UUID id = UUID.randomUUID();
-        when(repo.findById(id)).thenReturn(Optional.of(new OrderPurchase(id, 26, 202, 1004, 4, 400, String.valueOf(OrderState.ORDER_PAID), "WALLET", new Timestamp(System.currentTimeMillis()).toString())));
+        when(repo.findById(id)).thenReturn(Optional.of(new OrderPurchase(id, 26, 202, 1004, 4, 400, String.valueOf(OrderState.ORDER_PAID), "WALLET",new Timestamp(System.currentTimeMillis()).toString())));
 
-        OrderQueue response=service.updateById(OrderQueue.of(id, OrderState.valueOf(String.valueOf(OrderState.ORDER_DELIVERED)),"success"));
+        OrderQueue response=service.updateById(OrderQueue.of(id,OrderState.ORDER_DELIVERED,"success"));
 
         assertEquals("ORDER_DELIVERED".toString(),String.valueOf(service.updateById(response).getOrderState()));
         assertNotEquals(300, service.getByID(id).getPrice());

@@ -2,8 +2,9 @@ package org.saga.example.payment.sqs;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
-import org.saga.example.orders.order.OrderQueue;
+
 import org.saga.example.payment.entity.Payment;
+import org.saga.example.shared.order.OrderQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

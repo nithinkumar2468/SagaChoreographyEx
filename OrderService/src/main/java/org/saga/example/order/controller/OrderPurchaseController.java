@@ -6,16 +6,14 @@ import org.saga.example.order.model.OrderPurchase;
 import org.saga.example.order.service.OrderPurchaseService;
 import org.saga.example.shared.DTO.OrderPurchaseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin("http://localhost:3000")
 public class OrderPurchaseController {
 
     @Autowired
@@ -26,7 +24,7 @@ public class OrderPurchaseController {
 
     @PostMapping("/create")
     Observable<OrderPurchase> createOrder(@RequestBody OrderPurchaseDTO purchase) {
-        purchase.setOrderId(UUID.randomUUID());
+        //purchase.setOrderId(UUID.randomUUID());
         return Observable.fromCallable(() -> service.createOrderPurchase(purchase));
     }
 
@@ -42,6 +40,11 @@ public class OrderPurchaseController {
                 })
                 .toList().blockingSubscribe();
         return dtoList;
+    }
+
+    @GetMapping("/getall/{userId}")
+    public List<OrderPurchase> getAllOrdersForUser(@PathVariable Integer userId){
+        return service.GetAllOrdersByUserId(userId);
     }
 
 }

@@ -1,11 +1,9 @@
 package org.saga.example.payment.service;
 
 import org.saga.example.order.model.OrderPurchase;
-import org.saga.example.orders.order.OrderQueue;
-import org.saga.example.orders.order.OrderState;
-import org.saga.example.orders.payment.PaymentStatus;
-import org.saga.example.orders.payment.TxnState;
-import org.saga.example.orders.restaurant.PaymentResponseFromRestaurant;
+
+import org.saga.example.shared.payment.PaymentStatus;
+import org.saga.example.shared.restaurant.PaymentResponseFromRestaurant;
 import org.saga.example.payment.entity.Payment;
 import org.saga.example.payment.entity.UserBalance;
 import org.saga.example.payment.entity.UserTxn;
@@ -14,6 +12,8 @@ import org.saga.example.payment.repository.PaymentRepository;
 import org.saga.example.payment.repository.UserBalanceRepository;
 import org.saga.example.payment.repository.UserTxnRepository;
 import org.saga.example.payment.sqs.PaymentPublisher;
+import org.saga.example.shared.order.OrderQueue;
+import org.saga.example.shared.order.OrderState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,15 +78,15 @@ public class PaymentService {
                         paymentPublisher.publish(response);
 
                         String time = new Timestamp(System.currentTimeMillis()).toString();
-                        utrepo.save(UserTxn.of(orderPurchase.getOrderId(), uba.getUserId(), orderPurchase.getPrice(), time, TxnState.SUCCESS.toString()));
+                        utrepo.save(UserTxn.of(orderPurchase.getOrderId(), uba.getUserId(), orderPurchase.getPrice(), time, "SUCCESS"));
                         return true;
                     });
         } else {
             payment.setPaymentStatus(String.valueOf(PaymentStatus.FAILURE));
             repo.save(payment);
             String time = new Timestamp(System.currentTimeMillis()).toString();
-            utrepo.save(UserTxn.of(orderPurchase.getOrderId(), ub.getUserId(), orderPurchase.getPrice(), time, TxnState.FAILURE.toString()));
-            OrderQueue response = OrderQueue.of(orderPurchase.getOrderId(), OrderState.ORDER_FAILED,"failure");
+            utrepo.save(UserTxn.of(orderPurchase.getOrderId(), ub.getUserId(), orderPurchase.getPrice(), time, "FAILURE"));
+            OrderQueue response = OrderQueue.of(orderPurchase.getOrderId(), OrderState.ORDER_FAILED ,"failure");
             paymentPublisher.publish(response);
         }
     }
@@ -114,5 +114,9 @@ public class PaymentService {
         log.info("Amount Refunded to account Id : "+balance.getUserId());
         ubrepo.save(balance);
         return response;
+    }
+
+    public Payment findBYOrderID(UUID orderId){
+        return repo.findByorderId(orderId);
     }
 }

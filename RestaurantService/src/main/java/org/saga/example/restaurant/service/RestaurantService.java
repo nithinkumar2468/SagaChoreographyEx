@@ -1,36 +1,74 @@
 package org.saga.example.restaurant.service;
 
-import org.saga.example.orders.order.OrderQueue;
-import org.saga.example.orders.order.OrderState;
-import org.saga.example.orders.restaurant.PaymentResponseFromRestaurant;
-import org.saga.payment.entity.Payment;
+import org.modelmapper.ModelMapper;
+import org.saga.example.payment.entity.Payment;
+import org.saga.example.restaurant.exceptions.HotelNotFoundException;
 import org.saga.example.restaurant.model.Hotel;
+import org.saga.example.shared.order.OrderQueue;
+import org.saga.example.shared.order.OrderState;
+import org.saga.example.shared.restaurant.PaymentResponseFromRestaurant;
+import org.saga.example.shared.restaurant.RestaurantDTO;
+import org.saga.example.shared.restaurant.UpdateOrderRequest;
 import org.saga.example.restaurant.model.Products;
 import org.saga.example.restaurant.model.Restaurant;
 import org.saga.example.restaurant.repository.HotelRepository;
 import org.saga.example.restaurant.repository.ProductsRepository;
 import org.saga.example.restaurant.repository.RestaurantRepository;
 import org.saga.example.restaurant.sqs.RestaurantPublisher;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RestaurantService {
 
-    @Autowired
-    private RestaurantRepository repo;
-    @Autowired
-    private HotelRepository hrepo;
-    @Autowired
-    private ProductsRepository prodRepo;
-    @Autowired
-    private RestaurantPublisher publisher;
+    private static final Logger log= LoggerFactory.getLogger(RestaurantService.class);
+
+    private final RestaurantRepository repo;
+    private final HotelRepository hrepo;
+    private final ProductsRepository prodRepo;
+    private final RestaurantPublisher publisher;
+    private final ModelMapper modelMapper;
+
+    public RestaurantService(RestaurantRepository repo, HotelRepository hrepo, ProductsRepository prodRepo, RestaurantPublisher publisher, ModelMapper modelMapper) {
+        this.repo = repo;
+        this.hrepo = hrepo;
+        this.prodRepo = prodRepo;
+        this.publisher = publisher;
+        this.modelMapper = modelMapper;
+    }
 
     public void send(Payment payment) throws InterruptedException {
+        Hotel hotel = hrepo.findById(payment.getHotelId()).orElseThrow(
+                ()->new HotelNotFoundException("Hotel with Id : "+payment.getHotelId()+" not found")
+        );
 
-        Hotel hotel = hrepo.findById(payment.getHotelId()).get();
+        Products product = prodRepo.findById(payment.getProductId()).get();
+        Restaurant restaurant = new Restaurant();
+        restaurant.setOrderId(payment.getOrderId());
+        restaurant.setHotelId(hotel.getHotelId());
+        restaurant.setHotelName(hotel.getHotelName());
+        restaurant.setQuantity(payment.getQuantity());
+        restaurant.setPrice(payment.getAmount());
+        restaurant.setItem(product.getItem());
+        restaurant.setUserId(payment.getCustomerId());
+        restaurant.setPaymentId(payment.getPaymentId());
+        restaurant.setRestaurantOrderStatus("Pending");
+        repo.save(restaurant);
+
+        OrderQueue response = OrderQueue.of(payment.getOrderId(), OrderState.ORDER_PENDING, "success");
+        publisher.publishToOrder(response);
+
+    }
+
+    /*public void send(Payment payment) throws InterruptedException {
+
+        Hotel hotel = hrepo.findById(payment.getHotelId()).orElseThrow(
+                ()->new HotelNotFoundException("Hotel with Id : "+payment.getHotelId()+" not found")
+        );
         if (hotel.getStatus().equalsIgnoreCase("inactive")) {
             
             OrderQueue response = OrderQueue.of(payment.getOrderId(), OrderState.ORDER_FAILED, "inactive");
@@ -40,7 +78,6 @@ public class RestaurantService {
             publisher.publish(res);
         } else {
             Products product = prodRepo.findById(payment.getProductId()).get();
-
             Restaurant restaurant = new Restaurant();
             restaurant.setOrderId(payment.getOrderId());
             restaurant.setHotelId(hotel.getHotelId());
@@ -52,7 +89,7 @@ public class RestaurantService {
 
             if (product.getQuantity() >= payment.getQuantity()) {
 
-                restaurant.setRestaurantOrderStatus("success");
+                restaurant.setRestaurantOrderStatus("Pending");
                 repo.save(restaurant);
 
                 publisher.publish(restaurant);
@@ -73,9 +110,29 @@ public class RestaurantService {
                 publisher.publishToOrder(response);
             }
         }
-    }
+    }*/
 
     public List<Restaurant> getAllRestaurant() {
         return repo.findAll();
+    }
+
+    public RestaurantDTO updateOrderByOrderId(UpdateOrderRequest restaurant, UUID orderId) throws InterruptedException {
+        Restaurant order = repo.findById(orderId).get();
+        order.setRestaurantOrderStatus(restaurant.getRestaurantOrderStatus());
+        if(restaurant.getRestaurantOrderStatus().equalsIgnoreCase("success")){
+
+            OrderQueue response = OrderQueue.of(orderId, OrderState.ORDER_PREPARED, "success");
+            publisher.publishToOrder(response);
+
+            publisher.publishToDelivery(order);
+        }
+        else{
+            OrderQueue response = OrderQueue.of(orderId, OrderState.ORDER_FAILED, "failure");
+            publisher.publishToOrder(response);
+
+            PaymentResponseFromRestaurant res = PaymentResponseFromRestaurant.of(orderId,order.getPaymentId(), order.getPrice(),OrderState.ORDER_FAILED,"failure");
+            publisher.publishToPayment(res);
+        }
+        return modelMapper.map(repo.save(order), RestaurantDTO.class);
     }
 }

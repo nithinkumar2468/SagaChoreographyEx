@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -30,7 +31,7 @@ public class OrderQueueConsumer {
     }
 
     @SqsListener("order-updates")
-    @Transactional
+    @Transactional(rollbackFor = {HotelInactiveException.class}, propagation = Propagation.REQUIRES_NEW)
     public void consume(OrderQueue response) {
         if (response != null) {
             log.info("Received Order Status = " + response.getOrderState() + " for OrderId : " + response.getOrderId());
@@ -39,7 +40,7 @@ public class OrderQueueConsumer {
                //repo.deleteById(response.getOrderId());
                 //service.deleteByorderId(response.getOrderId());
                 //service.checkHotelStatus(response);
-                //throw new HotelInactiveException("Hotel is In Active for Order Id : "+response.getOrderId());
+                throw new HotelInactiveException("Hotel is In Active for Order Id : "+response.getOrderId());
             } else {
                 service.updateById(response);
             }

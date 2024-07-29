@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserBalanceRepository extends JpaRepository<UserBalance,Integer> {
+    UserBalance findByEmail(String email);
 }

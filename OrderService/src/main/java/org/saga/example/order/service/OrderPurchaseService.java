@@ -1,15 +1,15 @@
 package org.saga.example.order.service;
 
-import io.reactivex.rxjava3.core.Observable;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.saga.example.order.exceptions.AwsSqsException;
 import org.saga.example.order.exceptions.HotelInactiveException;
 import org.saga.example.order.exceptions.OrderNotFoundException;
-import org.saga.example.order.model.Hotel;
 import org.saga.example.order.model.OrderPurchase;
-import org.saga.example.order.repository.HotelRepository;
 import org.saga.example.order.repository.OrderPurchaseRepository;
 import org.saga.example.shared.DTO.OrderPurchaseDTO;
 import org.saga.example.shared.order.OrderQueue;
-import org.saga.example.shared.order.OrderStatus;
+import org.saga.example.shared.order.OrderState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,36 +35,37 @@ public class OrderPurchaseService {
     private OrderPurchaseRepository repo;
 
     @Autowired
-    private HotelRepository hrrepo;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private OrderPublisher publisher;
 
-    @Transactional(rollbackFor = {HotelInactiveException.class}, propagation = Propagation.REQUIRES_NEW)
-    public OrderPurchase createOrderPurchase(OrderPurchaseDTO purchase) {
+    @Transactional(rollbackFor = {AwsSqsException.class}, propagation = Propagation.REQUIRES_NEW)
+    public OrderPurchase createOrderPurchase(OrderPurchaseDTO purchase) throws JsonProcessingException {
         OrderPurchase orderpurchase = new OrderPurchase();
-        orderpurchase.setOrderId(purchase.getOrderId());
+        orderpurchase.setOrderId(UUID.randomUUID());
         orderpurchase.setCustomerId(purchase.getCustomerId());
         orderpurchase.setProductId(purchase.getProductId());
         orderpurchase.setPrice(purchase.getPrice());
         orderpurchase.setHotelId(purchase.getHotelId());
         orderpurchase.setQuantity(purchase.getQuantity());
-        orderpurchase.setOrderStatus(String.valueOf(OrderStatus.ORDER_CREATED));
+        orderpurchase.setOrderStatus(String.valueOf(OrderState.ORDER_CREATED));
         orderpurchase.setPaymentMethod(purchase.getPaymentMethod());
         String time = new Timestamp(System.currentTimeMillis()).toString();
         orderpurchase.setCreatedTimeStamp(time);
-
+        /*Instant instant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        orderpurchase.setCreatedTimeStamp(instant.atOffset(ZoneOffset.UTC).toInstant());*/
         repo.save(orderpurchase);
 
-        log.info("Order Created for orderId : " + purchase.getOrderId());
+        log.info("Order Created for orderId : " + orderpurchase.getOrderId());
 
-        publisher.publish(orderpurchase);
-
-        Hotel status = hrrepo.findById(purchase.getHotelId()).get();
-        if (status.getStatus().equalsIgnoreCase("inactive")) {
-            throw new HotelInactiveException("Hotel InActive For orderId : " + purchase.getOrderId());
+        try {
+            publisher.publish(orderpurchase);
+            return orderpurchase;
         }
-        return orderpurchase;
+        catch (Exception e) {
+            throw new AwsSqsException("AWS Resource Not Found..!");
+        }
     }
 
     public List<OrderPurchase> getAllOrders() {
@@ -69,7 +74,7 @@ public class OrderPurchaseService {
 
     public OrderPurchase getByID(@PathVariable UUID orderId) {
         return repo.findById(orderId).orElseThrow(
-                ()->new OrderNotFoundException("Order with id : "+orderId+" not found.")
+                () -> new OrderNotFoundException("Order with id : " + orderId + " not found.")
         );
     }
 
@@ -90,5 +95,10 @@ public class OrderPurchaseService {
 
     public void deleteByorderId(UUID orderId) {
         repo.deleteById(orderId);
+    }
+
+    public List<OrderPurchase> GetAllOrdersByUserId(Integer userId) {
+        List<OrderPurchase> orders = repo.findBycustomerId(userId);
+        return orders;
     }
 }

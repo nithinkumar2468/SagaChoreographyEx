@@ -2,7 +2,7 @@ package org.saga.example.payment.sqs;
 
 import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import org.saga.example.order.model.OrderPurchase;
-import org.saga.example.orders.restaurant.PaymentResponseFromRestaurant;
+import org.saga.example.shared.restaurant.PaymentResponseFromRestaurant;
 import org.saga.example.payment.entity.Payment;
 import org.saga.example.payment.entity.UserBalance;
 import org.saga.example.payment.repository.PaymentRepository;

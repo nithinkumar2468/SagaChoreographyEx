@@ -21,6 +21,7 @@ public class Restaurant {
     private Integer hotelId;
     private String hotelName;
     private Integer userId;
+    private UUID paymentId;
     private String Item;
     private Integer quantity;
     private Integer price;

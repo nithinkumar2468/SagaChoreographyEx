@@ -3,6 +3,7 @@ package org.saga.example.restaurant.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.saga.example.restaurant.model.Hotel;
 
 import javax.persistence.*;
 
@@ -18,8 +19,9 @@ public class Products {
     private Integer productId;
     private String item;
     private Integer quantity;
+    private Integer price;
 
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="hotelId")
     private Hotel hotel;
 }

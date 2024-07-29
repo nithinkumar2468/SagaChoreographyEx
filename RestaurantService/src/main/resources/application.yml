@@ -2,7 +2,7 @@ spring:
   main:
     allow-bean-definition-overriding: 'true'
     scan:
-      base-packages: org.saga.example.restaurant
+      base-packages: org.saga.example.payment,org.saga.example.payment
   jpa:
     hibernate:
       ddl-auto: update

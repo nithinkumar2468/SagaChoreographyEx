@@ -17,6 +17,7 @@ public class UserBalance {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="user_id_seq")
     private int userId;
-
+    private String email;
+    private String password;
     private int balance;
 }
