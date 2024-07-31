@@ -3,7 +3,6 @@ package org.saga.example.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.saga.example.order.exceptions.AwsSqsException;
-import org.saga.example.order.exceptions.HotelInactiveException;
 import org.saga.example.order.exceptions.OrderNotFoundException;
 import org.saga.example.order.model.OrderPurchase;
 import org.saga.example.order.repository.OrderPurchaseRepository;
@@ -18,11 +17,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,21 +47,26 @@ public class OrderPurchaseService {
         orderpurchase.setQuantity(purchase.getQuantity());
         orderpurchase.setOrderStatus(String.valueOf(OrderState.ORDER_CREATED));
         orderpurchase.setPaymentMethod(purchase.getPaymentMethod());
-        String time = new Timestamp(System.currentTimeMillis()).toString();
-        orderpurchase.setCreatedTimeStamp(time);
-        /*Instant instant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-        orderpurchase.setCreatedTimeStamp(instant.atOffset(ZoneOffset.UTC).toInstant());*/
+        /*String time = new Timestamp(System.currentTimeMillis()).toString();
+        orderpurchase.setCreatedTimeStamp(time);*/
+        Instant instant = Instant.now().with(ChronoField.NANO_OF_SECOND, 123_456_789L);
+
+        orderpurchase.setCreatedTimeStamp(instant);
         repo.save(orderpurchase);
 
         log.info("Order Created for orderId : " + orderpurchase.getOrderId());
 
         try {
             publisher.publish(orderpurchase);
+            log.info("try triggered");
             return orderpurchase;
         }
         catch (Exception e) {
+            log.info("catch triggered");
             throw new AwsSqsException("AWS Resource Not Found..!");
         }
+        /*publisher.publish(orderpurchase);
+        return orderpurchase;*/
     }
 
     public List<OrderPurchase> getAllOrders() {

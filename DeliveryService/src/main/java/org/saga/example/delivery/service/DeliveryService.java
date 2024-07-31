@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,8 +32,9 @@ public class DeliveryService {
         delivery.setHotel(request.getHotelName());
         delivery.setItem(request.getItem());
         delivery.setQuantity(request.getQuantity());
-        String time = new Timestamp(System.currentTimeMillis()).toString();
-        delivery.setDeliveryTime(time);
+        /*String time = new Timestamp(System.currentTimeMillis()).toString();*/
+        Instant instant = Instant.now().with(ChronoField.NANO_OF_SECOND, 123_456_789L);
+        delivery.setDeliveryTime(instant);
         delivery.setDeliveryStatus("Successful");
 
         repo.save(delivery);

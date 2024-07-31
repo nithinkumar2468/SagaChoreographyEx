@@ -1,12 +1,12 @@
 package org.saga.example.order.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.saga.example.shared.order.DefaultInstantDeserializer;
+import org.saga.example.shared.order.DefaultInstantSerializer;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -31,6 +31,7 @@ public class OrderPurchase {
     private String orderStatus;
     private String paymentMethod;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private String createdTimeStamp;
+    @JsonDeserialize(using= DefaultInstantDeserializer.class)
+    @JsonSerialize(using= DefaultInstantSerializer.class)
+    private Instant createdTimeStamp;
 }

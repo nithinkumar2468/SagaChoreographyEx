@@ -24,3 +24,6 @@ spring:
     allow-bean-definition-overriding: 'true'
     scan:
       base-packages: org.saga.example.order
+  jackson:
+    serialization:
+      write-dates-as-timestamps: 'false'
