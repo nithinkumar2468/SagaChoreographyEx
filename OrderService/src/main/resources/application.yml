@@ -1,8 +1,8 @@
 cloud:
   aws:
     credentials:
-      accessKey: AKIAW3MEBN7475IXMRCW
-      secretKey: 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
+      accessKey: 
+      secretKey: 
       instanceProfile: 'false'
       useDefaultAwsCredentialsChain: 'true'
     region:
@@ -24,6 +24,3 @@ spring:
     allow-bean-definition-overriding: 'true'
     scan:
       base-packages: org.saga.example.order
-  jackson:
-    serialization:
-      write-dates-as-timestamps: 'false'
