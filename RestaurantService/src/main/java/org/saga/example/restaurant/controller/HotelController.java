@@ -8,6 +8,8 @@ import org.saga.example.shared.DTO.LoginMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin({"http://localhost:3000", "http://localhost:3001"})
 public class HotelController {
@@ -41,5 +43,9 @@ public class HotelController {
         return repo.findById(id).orElseThrow(
                 ()->new HotelNotFoundException("Hotel with id : "+id+" not found.")
         );
+    }
+    @GetMapping("/getall/hotels")
+    public List<Hotel> getAllHotels(){
+        return repo.findAll();
     }
 }
