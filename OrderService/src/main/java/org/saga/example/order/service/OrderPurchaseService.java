@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.Instant;
-import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,8 +49,7 @@ public class OrderPurchaseService {
         orderpurchase.setPaymentMethod(purchase.getPaymentMethod());
         /*String time = new Timestamp(System.currentTimeMillis()).toString();
         orderpurchase.setCreatedTimeStamp(time);*/
-        Instant instant = Instant.now().with(ChronoField.NANO_OF_SECOND, 123_456_789L);
-
+        Instant instant = Instant.now().truncatedTo(ChronoUnit.MICROS);
         orderpurchase.setCreatedTimeStamp(instant);
         repo.save(orderpurchase);
 
@@ -60,8 +59,7 @@ public class OrderPurchaseService {
             publisher.publish(orderpurchase);
             log.info("try triggered");
             return orderpurchase;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("catch triggered");
             throw new AwsSqsException("AWS Resource Not Found..!");
         }
@@ -74,9 +72,7 @@ public class OrderPurchaseService {
     }
 
     public OrderPurchase getByID(@PathVariable UUID orderId) {
-        return repo.findById(orderId).orElseThrow(
-                () -> new OrderNotFoundException("Order with id : " + orderId + " not found.")
-        );
+        return repo.findById(orderId).orElseThrow(() -> new OrderNotFoundException("Order with id : " + orderId + " not found."));
     }
 
     public OrderQueue updateById(OrderQueue response) {

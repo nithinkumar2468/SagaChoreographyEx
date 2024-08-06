@@ -31,6 +31,10 @@ public class RestaurantController {
         List<Restaurant> orders = repo.findByhotelId(hotelId);
         return orders.stream().map(order -> modelMapper.map(order, RestaurantDTO.class)).collect(Collectors.toList());
     }
+    @GetMapping("/get/{orderId}")
+    public Restaurant getOrderById(@PathVariable UUID orderId){
+        return service.getOrderById(orderId);
+    }
 
     @PutMapping("/update/{orderId}")
     public RestaurantDTO updateOrder(@RequestBody UpdateOrderRequest restaurant, @PathVariable UUID orderId) throws InterruptedException {

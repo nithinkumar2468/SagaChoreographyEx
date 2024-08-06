@@ -15,7 +15,6 @@ public class OrderPublisher {
     public OrderPublisher(AmazonSQSAsync amazonSQSAsync) {
         this.msgTemplate = new QueueMessagingTemplate(amazonSQSAsync);
     }
-
     public void publish(OrderPurchase orderpurchase) {
         log.info("Order Event Triggered :{}", orderpurchase.getOrderId());
         msgTemplate.convertAndSend("payment-updates", orderpurchase);

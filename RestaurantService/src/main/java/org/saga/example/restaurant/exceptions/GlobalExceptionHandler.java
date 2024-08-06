@@ -18,4 +18,10 @@ public class GlobalExceptionHandler {
     public @ResponseBody ErrorResponse productNotFoundHandler(ProductNotFoundException ex){
         return new ErrorResponse(HttpStatus.NOT_FOUND.value(),ex.getMessage());
     }
+
+    @ExceptionHandler(value= OrderNotFoundException.class)
+    public @ResponseBody ErrorResponse orderNotFoundException(OrderNotFoundException ex){
+        return new ErrorResponse(HttpStatus.NO_CONTENT.value(), ex.getMessage());
+    }
+
 }
