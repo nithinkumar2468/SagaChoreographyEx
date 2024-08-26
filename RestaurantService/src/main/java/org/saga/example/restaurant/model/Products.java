@@ -18,7 +18,7 @@ public class Products {
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator ="product_id_seq")
     private Integer productId;
     private String item;
-    private Integer quantity;
+    private String category;
     private Integer price;
 
     @ManyToOne(fetch= FetchType.EAGER)

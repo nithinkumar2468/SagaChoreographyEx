@@ -1,7 +1,7 @@
 package org.saga.example.restaurant.controller;
 
-import org.saga.example.restaurant.model.Hotel;
 import org.saga.example.restaurant.exceptions.HotelNotFoundException;
+import org.saga.example.restaurant.model.Hotel;
 import org.saga.example.restaurant.repository.HotelRepository;
 import org.saga.example.shared.DTO.LoginFront;
 import org.saga.example.shared.DTO.LoginMessage;
@@ -18,7 +18,7 @@ public class HotelController {
     private HotelRepository repo;
 
     @PostMapping("/save/hotel")
-    public Hotel saveHotel(@RequestBody Hotel hotel){
+    public Hotel saveHotel(@RequestBody Hotel hotel) {
         return repo.save(hotel);
     }
 
@@ -39,13 +39,26 @@ public class HotelController {
     }
 
     @GetMapping("/get/hotel/{id}")
-    public Hotel getHotelById(@PathVariable Integer id){
+    public Hotel getHotelById(@PathVariable Integer id) {
         return repo.findById(id).orElseThrow(
-                ()->new HotelNotFoundException("Hotel with id : "+id+" not found.")
+                () -> new HotelNotFoundException("Hotel with id : " + id + " not found.")
         );
     }
+
+    /*@GetMapping("getallhotelswithproducts/{id}")
+    public List<Products> getallHotelProducts(@PathVariable Integer id) {
+        HotelWithProducts data = new HotelWithProducts();
+        Hotel hotel = repo.findById(id).orElseThrow(
+                () -> new HotelNotFoundException("Hotel With " + id + " not Found.")
+        );
+       *//* data.setHotel(hotel);
+        data.setProducts();*//*
+        List<Products> products = service.getallProductsById(id);
+        return products;
+    }*/
+
     @GetMapping("/getall/hotels")
-    public List<Hotel> getAllHotels(){
+    public List<Hotel> getAllHotels() {
         return repo.findAll();
     }
 }

@@ -13,5 +13,6 @@ public class ProductsDTO {
     @Id
     private Integer productId;
     private String item;
-    private Integer quantity;
+    private String category;
+    private Integer price;
 }
