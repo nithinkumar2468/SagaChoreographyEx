@@ -70,7 +70,7 @@ public class RestaurantServiceTests {
         product.setProductId(101);
         product.setItem("DOSA");
         product.setHotel(Hotel.of(1000, "UDUPI", "1001", "Active"));
-        product.setQuantity(4);
+        product.setCategory("tiffins");
         product.setPrice(70);
 
         when(prodRepo.findById(101)).thenReturn(Optional.of(product));
